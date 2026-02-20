@@ -1,0 +1,203 @@
+package com.mycompany.analizadores;
+
+import java_cup.runtime.*;
+import java.util.*;
+
+parser code {:
+    Lexer lexer;
+    private List<String> erroresSintacticos;
+
+    /* Falta recuperacion de errores*/
+
+    public Parser(Lexer lexer) {
+        super(lexer);
+        this.lexer = lexer;
+        erroresSintacticos = new ArrayList<>();
+    }
+    
+    public List<String> getSintaxError(){
+        return erroresSintacticos; 
+    }
+
+    @Override
+    public void syntax_error(Symbol s) {
+        erroresSintacticos.add(
+            "Error sintáctico en línea " + s.left +
+            ", columna " + s.right
+        );
+    }
+:};
+
+/* terminales */
+
+terminal INICIO, FIN;
+terminal SI, ENTONCES;
+terminal MIENTRAS, HACER;
+terminal MOSTRAR, LEER, VAR;
+terminal SEPARADOR;
+
+terminal DEFAULT;
+terminal COLOR_TEXTO_SI, COLOR_SI, FIGURA_SI, LETRA_SI, LETRA_SIZE_SI;
+terminal COLOR_TEXTO_MIENTRAS, COLOR_MIENTRAS, FIGURA_MIENTRAS, LETRA_MIENTRAS, LETRA_SIZE_MIENTRAS;
+terminal COLOR_TEXTO_BLOQUE, COLOR_BLOQUE, FIGURA_BLOQUE, LETRA_BLOQUE, LETRA_SIZE_BLOQUE;
+
+terminal ELIPSE, CIRCULO, PARALELOGRAMO, RECTANGULO, ROMBO, RECTANGULO_REDONDEADO;
+terminal ARIAL, TIMES_NEW_ROMAN, COMIC_SANS, VERDANA;
+
+terminal PARENTESIS_ABIERTO, PARENTESIS_CERRADO;
+terminal MAS, MENOS, MULTIPLICADO, DIVIDIDO;
+terminal IGUAL, IGUAL_IGUAL, DIFERENTE;
+terminal MENOR, MAYOR, MENOR_IGUAL, MAYOR_IGUAL;
+terminal AND, OR, NOT;
+terminal COMA;
+terminal PIPE; // no lo tenia jaja 
+
+terminal String CADENA;
+terminal Integer ENTERO;
+terminal Double DECIMAL;
+terminal String ID;
+terminal String COLOR_HEX;
+
+/* no terminales */
+
+non terminal programa;
+non terminal bloque_codigo;
+non terminal lista_sentencias;
+non terminal sentencia;
+non terminal condicion;
+non terminal expresion, termino, factor;
+non terminal bloque_config;
+non terminal lista_config;
+non terminal instruccion_config;
+non terminal color;
+non terminal rgb;
+non terminal figura;
+non terminal letra;
+
+/* precedencia por si acaso */
+
+precedence left OR;
+precedence left AND;
+precedence left IGUAL_IGUAL, DIFERENTE;
+precedence left MENOR, MAYOR, MENOR_IGUAL, MAYOR_IGUAL;
+precedence left MAS, MENOS;
+precedence left MULTIPLICADO, DIVIDIDO;
+precedence right NOT;
+
+start with programa;
+
+
+programa ::=
+        bloque_codigo
+        | bloque_codigo SEPARADOR bloque_config
+        ;
+
+
+bloque_codigo ::=
+        INICIO lista_sentencias FIN
+        ;
+
+lista_sentencias ::=
+        lista_sentencias sentencia
+        | sentencia
+        ;
+
+sentencia ::=
+        VAR ID IGUAL expresion
+        | ID IGUAL expresion
+        | MOSTRAR CADENA
+        | MOSTRAR ID
+        | LEER ID
+        | SI PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO ENTONCES lista_sentencias FIN SI
+        | MIENTRAS PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO HACER lista_sentencias FIN MIENTRAS
+        ;
+
+
+condicion ::=
+        expresion IGUAL_IGUAL expresion
+        | expresion DIFERENTE expresion
+        | expresion MENOR expresion
+        | expresion MAYOR expresion
+        | expresion MENOR_IGUAL expresion
+        | expresion MAYOR_IGUAL expresion
+        | condicion AND condicion
+        | condicion OR condicion
+        | NOT condicion
+        | PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO
+        ;
+
+
+expresion ::=
+        expresion MAS termino
+        | expresion MENOS termino
+        | termino
+        ;
+
+termino ::=
+        termino MULTIPLICADO factor
+        | termino DIVIDIDO factor
+        | factor
+        ;
+
+factor ::=
+        ENTERO
+        | DECIMAL
+        | ID
+        | PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO
+        ;
+
+/* configuracion */ 
+
+bloque_config ::=
+        lista_config
+        ;
+
+lista_config ::=
+        lista_config instruccion_config
+        | instruccion_config
+        ;
+
+instruccion_config ::=
+        DEFAULT IGUAL expresion
+        | COLOR_TEXTO_SI IGUAL color PIPE expresion
+        | COLOR_SI IGUAL color PIPE expresion
+        | FIGURA_SI IGUAL figura PIPE expresion
+        | LETRA_SI IGUAL letra PIPE expresion
+        | LETRA_SIZE_SI IGUAL expresion PIPE expresion
+        | COLOR_TEXTO_MIENTRAS IGUAL color PIPE expresion
+        | COLOR_MIENTRAS IGUAL color PIPE expresion
+        | FIGURA_MIENTRAS IGUAL figura PIPE expresion
+        | LETRA_MIENTRAS IGUAL letra PIPE expresion
+        | LETRA_SIZE_MIENTRAS IGUAL expresion PIPE expresion
+        | COLOR_TEXTO_BLOQUE IGUAL color PIPE expresion
+        | COLOR_BLOQUE IGUAL color PIPE expresion
+        | FIGURA_BLOQUE IGUAL figura PIPE expresion
+        | LETRA_BLOQUE IGUAL letra PIPE expresion
+        | LETRA_SIZE_BLOQUE IGUAL expresion PIPE expresion
+        ;
+
+
+color ::=
+        COLOR_HEX
+        | rgb
+        ;
+
+rgb ::=
+        expresion COMA expresion COMA expresion
+        ;
+
+figura ::=
+        ELIPSE
+        | CIRCULO
+        | PARALELOGRAMO
+        | RECTANGULO
+        | ROMBO
+        | RECTANGULO_REDONDEADO
+        ;
+
+letra ::=
+        ARIAL
+        | TIMES_NEW_ROMAN
+        | COMIC_SANS
+        | VERDANA
+        ;

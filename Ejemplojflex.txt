@@ -1,0 +1,95 @@
+%% //Separador de area
+
+//***Declaraciones de JFlex***
+%public
+%unicode
+%class AnalizadorLexico
+%standalone
+%line
+%column
+
+//**Definicion de las expresiones regulares**
+DIGITO = [0-9]
+LETRA = [a-zA-Z]
+IDENTIFICADOR = {LETRA}({LETRA}|{DIGITO})*
+ESPACIOS = [ \n\r\t]
+HEX_DIGIT = [0-9A-Fa-f]
+COLOR_HEX = H{HEX_DIGIT}{6}
+COMENTARIO = \#[^\r\n]*
+
+%% //Separador de area
+
+//***Reglas lexicas***
+//**Palabras reservadas**
+//*SeudoCodigo*
+"VAR"                           { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"INICIO"                        { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"FIN"                           { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"SI"                            { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"ENTONCES"                      { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"MIENTRAS"                      { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"HACER"                         { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"MOSTRAR"                       { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"LEER"                          { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+//*Configuración*
+"%DEFAULT"                      { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%COLOR_TEXTO_SI"               { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%COLOR_SI"                     { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%FIGURA_SI"                    { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%LETRA_SI"                     { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%LETRA_SIZE_SI"                { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%COLOR_TEXTO_MIENTRAS"         { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%COLOR_MIENTRAS"               { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%FIGURA_MIENTRAS"              { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%LETRA_MIENTRAS"               { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%LETRA_SIZE_MIENTRAS"          { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%COLOR_TEXTO_BLOQUE"           { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%COLOR_BLOQUE"                 { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%FIGURA_BLOQUE"                { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%LETRA_BLOQUE"                 { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"%LETRA_SIZE_BLOQUE"            { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+//*Figuras*
+"ELIPSE"                        { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"CIRCULO"                       { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"PARALELOGRAMO"                 { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"RECTANGULO"                    { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"ROMBO"                         { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"RECTANGULO_REDONDEADO"         { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+//*Tipo de letras*
+"ARIAL"                         { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"TIME_NEW_ROMAN"                { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"COMIC_SANS"                    { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+"VERDANA"                       { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+//**Colores**
+{COLOR_HEX}                     { System.out.println("Se encontro color Hexagesimal: " + yytext() + " en la linea: " + yyline); }
+//**Operadores relacionales**
+"=="                            { System.out.println("Se encontro operador relacional: " + yytext() + " en la linea: " + yyline); }
+"!="                            { System.out.println("Se encontro operador relacional: " + yytext() + " en la linea: " + yyline); }
+">="                            { System.out.println("Se encontro operador relacional: " + yytext() + " en la linea: " + yyline); }
+"<="                            { System.out.println("Se encontro operador relacional: " + yytext() + " en la linea: " + yyline); }
+">"                             { System.out.println("Se encontro operador relacional: " + yytext() + " en la linea: " + yyline); }
+"<"                             { System.out.println("Se encontro operador relacional: " + yytext() + " en la linea: " + yyline); }
+//**Operadores lógicos**
+"&&"                            { System.out.println("Se encontro operador logico: " + yytext() + " en la linea: " + yyline); }
+"||"                            { System.out.println("Se encontro operador logico: " + yytext() + " en la linea: " + yyline); }
+"!"                             { System.out.println("Se encontro operador logico: " + yytext() + " en la linea: " + yyline); }
+//**Signos Arithmeticos**
+"+"                             { System.out.println("Se encontro signo aritmetico: " + yytext() + " en la linea: " + yyline); }
+"-"                             { System.out.println("Se encontro signo aritmetico: " + yytext() + " en la linea: " + yyline); }
+"*"                             { System.out.println("Se encontro signo aritmetico: " + yytext() + " en la linea: " + yyline); }
+"/"                             { System.out.println("Se encontro signo aritmetico: " + yytext() + " en la linea: " + yyline); }
+"("                             { System.out.println("Se encontro signo aritmetico: " + yytext() + " en la linea: " + yyline); }
+")"                             { System.out.println("Se encontro signo aritmetico: " + yytext() + " en la linea: " + yyline); }
+//**Separador**
+"%%%%"                          { System.out.println("Se encontro separador: " + yytext() + " en la linea: " + yyline); }
+//**Comentarios**
+{COMENTARIO}                    { System.out.println("Se encontro comentario: " + yytext() + " en la linea: " + yyline); }
+//**Números**
+{DIGITO}+(\.{DIGITO}+)?         { System.out.println("Se encontro numero: " + yytext() + " en la linea: " + yyline); }
+//**Extras**
+"="                             { System.out.println("Se encontro asignacion: " + yytext() + " en la linea: " + yyline); }
+","                             { System.out.println("Se encontro palabra reservada: " + yytext() + " en la linea: " + yyline); }
+{IDENTIFICADOR}                 { System.out.println("Se encontro identificador: " + yytext() + " en la linea: " + yyline); }
+{ESPACIOS}                      { /* Ignorar espacios en blanco */ }
+//**Tokens no aceptados**
+.                               { System.out.println("Se encontro token no aceptado: " + yytext() + " en la linea: " + yyline); }
