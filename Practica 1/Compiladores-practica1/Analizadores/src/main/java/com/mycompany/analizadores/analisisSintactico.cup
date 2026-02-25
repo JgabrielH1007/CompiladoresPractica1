@@ -14,18 +14,45 @@ parser code {:
         this.lexer = lexer;
         erroresSintacticos = new ArrayList<>();
     }
+
+    public Lexer getLexer(){
+        return this.lexer;
+    }
     
     public List<String> getSintaxError(){
         return erroresSintacticos; 
     }
 
-    @Override
-    public void syntax_error(Symbol s) {
-        erroresSintacticos.add(
-            "Error sintáctico en línea " + s.left +
-            ", columna " + s.right
-        );
+    public void syntax_error(Symbol cur_token){
+        StringBuilder mssBuilder = new StringBuilder();
+        mssBuilder.append(symbl_name_from_id(cur_token.sym));
+        
+        if(cur_token.value != null) {
+            mssBuilder.append(cur_token.value.toString());
+        }
+
+        mssBuilder.append(", line: ");
+        mssBuilder.append(cur_token.left);
+        mssBuilder.append(", col: );
+        mssBuilder.append(cur_token.right);
+        
+        if( expected_token_id().isEmpty()  ){
+            mssBuilder.append(" -- ya no se esperaba ningun simbolo");
+        } else {
+            mssBuilder.append("Se esperaba: ");
+            for(Integer expected_token_id : expected_token_ids() ){ 
+                if(!symbl_name_from_id(expected_token_id).equals("error")){
+                    mssBuilder.append(symbl_name_from_id(expected_token_id));
+                    mssBuilder.append(" ");
+                }
+            }
+        }
     }
+
+    public void unrecovered_syntax_error(Symbol cur_token){
+        syntaxErrors.add("Error que no se puede recuperar");
+    }
+
 :};
 
 /* terminales */

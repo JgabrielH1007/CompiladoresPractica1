@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:fitsSystemWindows="true"> <Button
+    android:id="@+id/btnSeleccionar"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginTop="16dp"
+    android:text="Seleccionar Archivo .txt" />
+
+    <TextView
+        android:id="@+id/tvNombreArchivo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Ningún archivo seleccionado"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textColor="?android:attr/textColorPrimary" /> <Button
+        android:id="@+id/btnGenerar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="16dp"
+        android:text="Generar Diagrama"
+        android:enabled="false" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:background="#1AFFFFFF"
+        android:contentDescription="Lienzo del diagrama"> <com.example.aplicacioncompi1.uitheme.viewModel.DiagramaView
+        android:id="@+id/miDiagramaView"
+        android:layout_width="match_parent"
+        android:layout_height="3000dp" />
+
+    </ScrollView>
+
+</LinearLayout>

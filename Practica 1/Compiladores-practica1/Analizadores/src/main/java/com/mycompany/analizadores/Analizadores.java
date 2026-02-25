@@ -14,12 +14,13 @@ public class Analizadores {
 
     public static void main(String[] args) {
         String text = """
+                      #comentario 1
                              INICIO 
                                   VAR a = 10
                                   VAR b = 20
                                   SI (a < b) ENTONCES
                                       MOSTRAR "a es menor que b"
-                                  FIN SI
+                                  FIN SI #comentario 2
                                   MIENTRAS (a < 15) HACER
                                       a = a + 1
                                       MOSTRAR a
@@ -27,7 +28,7 @@ public class Analizadores {
                                   MOSTRAR "Fin del programa"
                               FIN
                               %%%%
-                              %DEFAULT=1
+                              %DEFAULT=1 #comentario 3
                               %COLOR_TEXTO_SI=12,45-5,1|1
                               %FIGURA_MIENTRAS=CIRCULO|1
                               %DEFAULT=3
