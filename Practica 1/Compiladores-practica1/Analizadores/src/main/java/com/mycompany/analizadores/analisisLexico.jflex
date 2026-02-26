@@ -64,13 +64,6 @@ CADENA = \"([^\"\\]|\\.)*\"
 "TIMES_NEW_ROMAN" { return getToken(sym.TIMES_NEW_ROMAN);}
 "COMIC_SANS" { return getToken(sym.COMIC_SANS);}
 "VERDANA" { return getToken(sym.VERDANA);}
-{ESPACIO} { /* Ignorar espacios en blanco */ }
-{COMENT} { /* Ignorar comentarios */ }
-{COLOR_HEX} { return getToken(sym.COLOR_HEX, yytext());}
-{DECIMAL} { return getToken(sym.DECIMAL, Double.parseDouble(yytext()));}
-{ENTERO} { return getToken(sym.ENTERO, Integer.parseInt(yytext()));}
-{CADENA} { return getToken(sym.CADENA, yytext().substring(1, yytext().length() - 1));}
-{ID} { return getToken(sym.ID, yytext());}
 "%DEFAULT" { return getToken(sym.DEFAULT);} 
 "%COLOR_TEXTO_SI" { return getToken(sym.COLOR_TEXTO_SI);}
 "%COLOR_SI" { return getToken(sym.COLOR_SI);}
@@ -106,4 +99,11 @@ CADENA = \"([^\"\\]|\\.)*\"
 "%%%%" { return getToken(sym.SEPARADOR); }
 "," { return getToken(sym.COMA);}
 "|" { return getToken(sym.PIPE);}
+{ESPACIO} { /* Ignorar espacios en blanco */ }
+{COMENT} { /* Ignorar comentarios */ }
+{COLOR_HEX} { return getToken(sym.COLOR_HEX, yytext());}
+{DECIMAL} { return getToken(sym.DECIMAL, Double.parseDouble(yytext()));}
+{ENTERO} { return getToken(sym.ENTERO, Integer.parseInt(yytext()));}
+{CADENA} { return getToken(sym.CADENA, yytext().substring(1, yytext().length() - 1));}
+{ID} { return getToken(sym.ID, yytext());}
 . { errores.add(new ErrorLexico(yytext(), yyline + 1, yycolumn +1)); } 

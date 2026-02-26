@@ -3,15 +3,13 @@
 // source: analisisLexico.jflex
 
 package com.example.aplicacioncompi1.uitheme.logic;
-
 import java_cup.runtime.*;
-
 import java.util.List;
 import java.util.ArrayList;
 
 
 @SuppressWarnings("fallthrough")
-public class Lexer implements java_cup.runtime.Scanner {
+public class Lexer implements Scanner {
 
   /** This character denotes the end of file. */
   public static final int YYEOF = -1;
@@ -780,7 +778,7 @@ public class Lexer implements java_cup.runtime.Scanner {
    * @return the next token.
    * @exception java.io.IOException if any I/O-Error occurs.
    */
-  @Override  public java_cup.runtime.Symbol next_token() throws java.io.IOException
+  @Override  public Symbol next_token() throws java.io.IOException
   {
     int zzInput;
     int zzAction;
@@ -918,7 +916,7 @@ public class Lexer implements java_cup.runtime.Scanner {
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
             zzDoEOF();
-          { return new java_cup.runtime.Symbol(sym.EOF); }
+          { return new Symbol(sym.EOF); }
       }
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {

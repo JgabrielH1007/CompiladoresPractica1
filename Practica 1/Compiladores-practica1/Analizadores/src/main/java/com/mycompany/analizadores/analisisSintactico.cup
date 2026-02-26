@@ -5,9 +5,12 @@ import java.util.*;
 
 parser code {:
     Lexer lexer;
-    private List<String> erroresSintacticos;
+    private List<ErrorSintactico> erroresSintacticos;
+    private List<ReporteOperador> operadores = new ArrayList<>();
+    private List<ReporteControl> estructuras = new ArrayList<>();
 
-    /* Falta recuperacion de errores*/
+    public List<ReporteOperador> getOperadores() { return operadores; }
+    public List<ReporteControl> getEstructuras() { return estructuras; }
 
     public Parser(Lexer lexer) {
         super(lexer);
@@ -19,40 +22,38 @@ parser code {:
         return this.lexer;
     }
     
-    public List<String> getSintaxError(){
+    public List<ErrorSintactico> getSintaxError(){
         return erroresSintacticos; 
     }
 
+    @Override
     public void syntax_error(Symbol cur_token){
-        StringBuilder mssBuilder = new StringBuilder();
-        mssBuilder.append(symbl_name_from_id(cur_token.sym));
+        String lexema = (cur_token.value != null) ? cur_token.value.toString() : symbl_name_from_id(cur_token.sym);
         
-        if(cur_token.value != null) {
-            mssBuilder.append(cur_token.value.toString());
-        }
-
-        mssBuilder.append(", line: ");
-        mssBuilder.append(cur_token.left);
-        mssBuilder.append(", col: );
-        mssBuilder.append(cur_token.right);
+        int linea = cur_token.left;
+        int columna = cur_token.right;
         
-        if( expected_token_id().isEmpty()  ){
-            mssBuilder.append(" -- ya no se esperaba ningun simbolo");
+        StringBuilder descripcion = new StringBuilder();
+        if( expected_token_ids().isEmpty()  ){
+            descripcion.append("Ya no se esperaba ningun simbolo");
         } else {
-            mssBuilder.append("Se esperaba: ");
+            descripcion.append("Se esperaba: ");
             for(Integer expected_token_id : expected_token_ids() ){ 
                 if(!symbl_name_from_id(expected_token_id).equals("error")){
-                    mssBuilder.append(symbl_name_from_id(expected_token_id));
-                    mssBuilder.append(" ");
+                    descripcion.append(symbl_name_from_id(expected_token_id));
+                    descripcion.append(" ");
                 }
             }
         }
+        
+        erroresSintacticos.add(new ErrorSintactico(lexema, linea, columna, descripcion.toString())); 
     }
 
+    @Override
     public void unrecovered_syntax_error(Symbol cur_token){
-        syntaxErrors.add("Error que no se puede recuperar");
+        String lexema = (cur_token.value != null) ? cur_token.value.toString() : symbl_name_from_id(cur_token.sym);
+        erroresSintacticos.add(new ErrorSintactico(lexema, cur_token.left, cur_token.right, "Error sintáctico irrecuperable."));
     }
-
 :};
 
 /* terminales */
@@ -77,7 +78,7 @@ terminal IGUAL, IGUAL_IGUAL, DIFERENTE;
 terminal MENOR, MAYOR, MENOR_IGUAL, MAYOR_IGUAL;
 terminal AND, OR, NOT;
 terminal COMA;
-terminal PIPE; // no lo tenia jaja 
+terminal PIPE; 
 
 terminal String CADENA;
 terminal Integer ENTERO;
@@ -117,16 +118,19 @@ start with programa;
 programa ::=
         bloque_codigo
         | bloque_codigo SEPARADOR bloque_config
+        | error SEPARADOR bloque_config 
         ;
-
 
 bloque_codigo ::=
         INICIO lista_sentencias FIN
+        | INICIO error FIN 
         ;
 
 lista_sentencias ::=
         lista_sentencias sentencia
         | sentencia
+        | lista_sentencias error sentencia 
+        | error sentencia               
         ;
 
 sentencia ::=
@@ -135,42 +139,63 @@ sentencia ::=
         | MOSTRAR CADENA
         | MOSTRAR ID
         | LEER ID
-        | SI PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO ENTONCES lista_sentencias FIN SI
-        | MIENTRAS PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO HACER lista_sentencias FIN MIENTRAS
+        | SI:s PARENTESIS_ABIERTO condicion:c PARENTESIS_CERRADO ENTONCES lista_sentencias FIN SI {:
+            estructuras.add(new ReporteControl("SI", sleft, String.valueOf(c)));
+        :}
+        | SI error ENTONCES lista_sentencias FIN SI 
+        
+        | MIENTRAS:m PARENTESIS_ABIERTO condicion:c PARENTESIS_CERRADO HACER lista_sentencias FIN MIENTRAS {:
+            estructuras.add(new ReporteControl("MIENTRAS", mleft, String.valueOf(c)));
+        :}
+        | MIENTRAS error HACER lista_sentencias FIN MIENTRAS
         ;
-
 
 condicion ::=
-        expresion IGUAL_IGUAL expresion
-        | expresion DIFERENTE expresion
-        | expresion MENOR expresion
-        | expresion MAYOR expresion
-        | expresion MENOR_IGUAL expresion
-        | expresion MAYOR_IGUAL expresion
-        | condicion AND condicion
-        | condicion OR condicion
-        | NOT condicion
-        | PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO
+        expresion:e1 IGUAL_IGUAL expresion:e2 {: RESULT = e1 + " == " + e2; :}
+        | expresion:e1 DIFERENTE expresion:e2 {: RESULT = e1 + " != " + e2; :}
+        | expresion:e1 MENOR expresion:e2 {: RESULT = e1 + " < " + e2; :}
+        | expresion:e1 MAYOR expresion:e2 {: RESULT = e1 + " > " + e2; :}
+        | expresion:e1 MENOR_IGUAL expresion:e2 {: RESULT = e1 + " <= " + e2; :}
+        | expresion:e1 MAYOR_IGUAL expresion:e2 {: RESULT = e1 + " >= " + e2; :}
+        | condicion:c1 AND condicion:c2 {: RESULT = c1 + " AND " + c2; :}
+        | condicion:c1 OR condicion:c2 {: RESULT = c1 + " OR " + c2; :}
+        | NOT condicion:c {: RESULT = "NOT " + c; :}
+        | PARENTESIS_ABIERTO condicion:c PARENTESIS_CERRADO {: RESULT = "(" + c + ")"; :}
         ;
 
-
 expresion ::=
-        expresion MAS termino
-        | expresion MENOS termino
-        | termino
+        expresion:e1 MAS:op termino:e2 {: 
+            String occ = e1 + " + " + e2;
+            operadores.add(new ReporteOperador("Suma", opleft, opright, occ));
+            RESULT = occ; 
+        :}
+        | expresion:e1 MENOS:op termino:e2 {: 
+            String occ = e1 + " - " + e2;
+            operadores.add(new ReporteOperador("Resta", opleft, opright, occ));
+            RESULT = occ; 
+        :}
+        | termino:t {: RESULT = t; :}
         ;
 
 termino ::=
-        termino MULTIPLICADO factor
-        | termino DIVIDIDO factor
-        | factor
+        termino:t1 MULTIPLICADO:op factor:t2 {: 
+            String occ = t1 + " * " + t2;
+            operadores.add(new ReporteOperador("Multiplicación", opleft, opright, occ));
+            RESULT = occ; 
+        :}
+        | termino:t1 DIVIDIDO:op factor:t2 {: 
+            String occ = t1 + " / " + t2;
+            operadores.add(new ReporteOperador("División", opleft, opright, occ));
+            RESULT = occ; 
+        :}
+        | factor:f {: RESULT = f; :}
         ;
 
 factor ::=
-        ENTERO
-        | DECIMAL
-        | ID
-        | PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO
+        ENTERO:e {: RESULT = String.valueOf(e); :}
+        | DECIMAL:d {: RESULT = String.valueOf(d); :}
+        | ID:id {: RESULT = String.valueOf(id); :}
+        | PARENTESIS_ABIERTO expresion:e PARENTESIS_CERRADO {: RESULT = "(" + e + ")"; :}
         ;
 
 /* configuracion */ 
@@ -182,6 +207,8 @@ bloque_config ::=
 lista_config ::=
         lista_config instruccion_config
         | instruccion_config
+        | lista_config error instruccion_config /* RECUPERACION: Si una config falla, salta a la siguiente */
+        | error instruccion_config              /* RECUPERACION: Si la primera config falla */
         ;
 
 instruccion_config ::=
@@ -202,7 +229,6 @@ instruccion_config ::=
         | LETRA_BLOQUE IGUAL letra PIPE expresion
         | LETRA_SIZE_BLOQUE IGUAL expresion PIPE expresion
         ;
-
 
 color ::=
         COLOR_HEX
@@ -228,3 +254,4 @@ letra ::=
         | COMIC_SANS
         | VERDANA
         ;
+

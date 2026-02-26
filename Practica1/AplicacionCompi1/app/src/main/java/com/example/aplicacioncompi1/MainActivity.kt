@@ -9,17 +9,19 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.aplicacioncompi1.uitheme.logic.GeneradorDiagrama
 import com.example.aplicacioncompi1.uitheme.viewModel.DiagramaView
 import com.example.aplicacioncompi1.uitheme.logic.Analizador
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import android.app.AlertDialog
+import android.webkit.WebView
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var btnSeleccionar: Button
     private lateinit var tvNombreArchivo: TextView
     private lateinit var btnGenerar: Button
+    private lateinit var btnEstadisticas: Button
     private lateinit var miDiagramaView: DiagramaView
 
     private var textoDelArchivo: String = ""
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         btnSeleccionar = findViewById(R.id.btnSeleccionar)
         tvNombreArchivo = findViewById(R.id.tvNombreArchivo)
         btnGenerar = findViewById(R.id.btnGenerar)
+        btnEstadisticas = findViewById(R.id.btnEstadisticas)
         miDiagramaView = findViewById(R.id.miDiagramaView)
 
         btnSeleccionar.setOnClickListener {
@@ -47,14 +50,9 @@ class MainActivity : AppCompatActivity() {
             selectorDeArchivos.launch(intent)
         }
 
-        // Acción al presionar "Generar Diagrama"
         btnGenerar.setOnClickListener {
             if (textoDelArchivo.isNotEmpty()) {
-
-                // 1. Instanciamos TU clase Analizador
                 val analizador = Analizador(textoDelArchivo)
-
-                // 2. Ejecutamos el análisis (JFlex + CUP)
                 analizador.analizar()
 
                 if (analizador.esCorrecto) {
@@ -62,18 +60,50 @@ class MainActivity : AppCompatActivity() {
                     if (generador != null) {
                         val nodosGenerados = generador.generarDiagrama()
                         miDiagramaView.nodos = nodosGenerados
-                        Toast.makeText(this, "¡Diagrama generado con éxito!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "¡Diagrama generado con éxito!", Toast.LENGTH_SHORT)
+                            .show()
+
+                        btnEstadisticas.isEnabled = true
+                        btnEstadisticas.setOnClickListener {
+                            mostrarReportes(analizador.reporteEstadistico)
+                        }
                     }
                 } else {
-                    // Si hubo error léxico o sintáctico, limpiamos el lienzo y avisamos
                     miDiagramaView.nodos = emptyList()
-                    Toast.makeText(this, "Error de sintaxis. Revisa el archivo de entrada.", Toast.LENGTH_LONG).show()
+                    btnEstadisticas.isEnabled = false
+                    mostrarReporteDeErrores(analizador.reporteErrores)
                 }
-
             } else {
                 Toast.makeText(this, "El archivo está vacío", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun mostrarReportes(htmlReporte: String) {
+        val webView = WebView(this)
+        webView.loadDataWithBaseURL(null, htmlReporte, "text/html", "UTF-8", null)
+
+        AlertDialog.Builder(this)
+            .setView(webView)
+            .setCancelable(false)
+            .setPositiveButton("Cerrar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun mostrarReporteDeErrores(htmlReporte: String) {
+        val webView = WebView(this)
+
+        webView.loadDataWithBaseURL(null, htmlReporte, "text/html", "UTF-8", null)
+
+        AlertDialog.Builder(this)
+            .setView(webView)
+            .setCancelable(false)
+            .setPositiveButton("Entendido") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun leerArchivoTxt(uri: Uri) {

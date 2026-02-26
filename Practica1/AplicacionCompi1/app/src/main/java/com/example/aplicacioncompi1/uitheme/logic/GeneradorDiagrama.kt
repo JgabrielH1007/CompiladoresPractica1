@@ -61,41 +61,71 @@ class GeneradorDiagrama(val input: String) {
     private fun procesarCodigo(codigoCrudo: String): MutableList<NodoDiagrama> {
         val lineas = codigoCrudo.lines().map { it.trim() }.filter { it.isNotEmpty() }
         val nodosGenerados = mutableListOf<NodoDiagrama>()
+        var i = 0
 
-        for (linea in lineas) {
-            if (linea == "INICIO" || linea == "FIN" || linea == "FIN SI" || linea == "FIN MIENTRAS") continue
+        while (i < lineas.size) {
+            val linea = lineas[i]
 
-            val indiceActual = contadorIndices++
-            var tipoNodo = TipoNodo.PROCESO
-            var textoMostrar = linea
-            var figuraDefault = "RECTANGULO"
-
-            when {
-                linea.startsWith("VAR ") || linea.contains("=") -> {
-                    tipoNodo = TipoNodo.PROCESO
-                    figuraDefault = "RECTANGULO"
-                }
-                linea.startsWith("MOSTRAR") || linea.startsWith("LEER") -> {
-                    tipoNodo = TipoNodo.ENTRADA_SALIDA
-                    figuraDefault = "PARALELOGRAMO"
-                }
-                linea.startsWith("SI ") -> {
-                    tipoNodo = TipoNodo.CONDICION
-                    figuraDefault = "ROMBO"
-                    textoMostrar = linea.substringAfter("(").substringBefore(")")
-                }
-                linea.startsWith("MIENTRAS ") -> {
-                    tipoNodo = TipoNodo.CICLO
-                    figuraDefault = "ROMBO"
-                    textoMostrar = linea.substringAfter("(").substringBefore(")")
-                }
+            if (linea == "INICIO" || linea == "FIN") {
+                val estilo = EstiloGrafico(figura = "ELIPSE")
+                nodosGenerados.add(NodoDiagrama(0, TipoNodo.INICIO_FIN, linea, estilo))
+                i++
             }
+            else if (linea.startsWith("SI ")) {
+                var texto = linea
+                i++
+                while (i < lineas.size && lineas[i] != "FIN SI" && !lineas[i].startsWith("%")) {
+                    texto += "\n   " + lineas[i]
+                    i++
+                }
+                if (i < lineas.size && lineas[i] == "FIN SI") {
+                    texto += "\n" + lineas[i]
+                    i++
+                }
 
-            val estilo = EstiloGrafico(figura = figuraDefault)
+                val indiceActual = contadorIndices++
+                val estilo = EstiloGrafico(figura = "ROMBO")
+                aplicarConfiguracionesAlEstilo(indiceActual, TipoNodo.CONDICION, estilo)
+                nodosGenerados.add(NodoDiagrama(indiceActual, TipoNodo.CONDICION, texto, estilo))
+            }
+            else if (linea.startsWith("MIENTRAS ")) {
+                var texto = linea
+                i++
+                while (i < lineas.size && lineas[i] != "FIN MIENTRAS" && !lineas[i].startsWith("%")) {
+                    texto += "\n   " + lineas[i]
+                    i++
+                }
+                if (i < lineas.size && lineas[i] == "FIN MIENTRAS") {
+                    texto += "\n" + lineas[i]
+                    i++
+                }
 
-            aplicarConfiguracionesAlEstilo(indiceActual, tipoNodo, estilo)
+                val indiceActual = contadorIndices++
+                val estilo = EstiloGrafico(figura = "PARALELOGRAMO")
+                aplicarConfiguracionesAlEstilo(indiceActual, TipoNodo.CICLO, estilo)
+                nodosGenerados.add(NodoDiagrama(indiceActual, TipoNodo.CICLO, texto, estilo))
+            }
+            else if (linea.startsWith("%") || linea == "%%%%") {
+                break
+            }
+            else {
+                var texto = linea
+                i++
+                while (i < lineas.size &&
+                    !lineas[i].startsWith("SI ") &&
+                    !lineas[i].startsWith("MIENTRAS ") &&
+                    lineas[i] != "FIN" &&
+                    lineas[i] != "%%%%" &&
+                    !lineas[i].startsWith("%")) {
+                    texto += "\n" + lineas[i]
+                    i++
+                }
 
-            nodosGenerados.add(NodoDiagrama(indiceActual, tipoNodo, textoMostrar, estilo))
+                val indiceActual = contadorIndices++
+                val estilo = EstiloGrafico(figura = "RECTANGULO")
+                aplicarConfiguracionesAlEstilo(indiceActual, TipoNodo.PROCESO, estilo)
+                nodosGenerados.add(NodoDiagrama(indiceActual, TipoNodo.PROCESO, texto, estilo))
+            }
         }
 
         return nodosGenerados

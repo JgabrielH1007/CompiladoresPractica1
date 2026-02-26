@@ -10,60 +10,85 @@ class DiagramaView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    // Lista de nodos que recibirá desde tu GeneradorDiagrama
     var nodos: List<NodoDiagrama> = emptyList()
         set(value) {
             field = value
-            requestLayout() // Le avisa a Android que debe recalcular el tamaño
-            invalidate()    // Obliga a redibujar el lienzo
+            requestLayout()
+            invalidate()
         }
 
-    // Pinceles para dibujar
     private val paintFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val paintBorde = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeWidth = 5f
-        color = Color.BLACK
+        style = Paint.Style.STROKE; strokeWidth = 5f; color = Color.BLACK
     }
-    private val paintTexto = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-    }
+    private val paintTexto = Paint(Paint.ANTI_ALIAS_FLAG).apply { textAlign = Paint.Align.CENTER }
     private val paintLinea = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeWidth = 4f
-        color = Color.DKGRAY
+        style = Paint.Style.STROKE; strokeWidth = 4f; color = Color.DKGRAY
+    }
+
+    private fun obtenerAltoNodo(nodo: NodoDiagrama): Float {
+        val lineas = nodo.texto.split("\n").size
+        // 120f de base + 40f por cada línea de texto
+        return kotlin.math.max(120f, (lineas * 50f) + 60f)
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val anchoPantalla = MeasureSpec.getSize(widthMeasureSpec)
+        if (nodos.isEmpty()) {
+            setMeasuredDimension(anchoPantalla, 0)
+            return
+        }
+
+        var alturaTotal = 100f
+        for (nodo in nodos) {
+            alturaTotal += obtenerAltoNodo(nodo) + 100f
+        }
+        alturaTotal += 100f
+
+        setMeasuredDimension(anchoPantalla, alturaTotal.toInt())
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (nodos.isEmpty()) return
 
-        val anchoNodo = 400f
-        val altoNodo = 150f
+        val anchoNodo = 500f
         val espaciadoVertical = 100f
-
-        var xCentro = width / 2f
+        val xCentro = width / 2f
         var yActual = 100f
 
         for ((index, nodo) in nodos.withIndex()) {
+            val altoNodo = obtenerAltoNodo(nodo)
             val left = xCentro - (anchoNodo / 2)
-            val top = yActual
             val right = xCentro + (anchoNodo / 2)
             val bottom = yActual + altoNodo
 
             aplicarEstilosAlPincel(nodo)
+            dibujarFigura(canvas, left, yActual, right, bottom, nodo.estilo.figura)
 
-            dibujarFigura(canvas, left, top, right, bottom, nodo.estilo.figura)
+            val lineasTexto = nodo.texto.split("\n")
+            val alturaLinea = paintTexto.descent() - paintTexto.ascent()
+            val alturaBloqueTexto = alturaLinea * lineasTexto.size
 
-            val yTexto = top + (altoNodo / 2) - ((paintTexto.descent() + paintTexto.ascent()) / 2)
-            canvas.drawText(nodo.texto, xCentro, yTexto, paintTexto)
+            var yTexto = yActual + (altoNodo / 2) - (alturaBloqueTexto / 2) - paintTexto.ascent()
+
+            for (linea in lineasTexto) {
+                canvas.drawText(linea, xCentro, yTexto, paintTexto)
+                yTexto += alturaLinea
+            }
 
             if (index < nodos.size - 1) {
                 canvas.drawLine(xCentro, bottom, xCentro, bottom + espaciadoVertical, paintLinea)
-                // Aquí podrías agregar lógica para dibujar la flechita (triángulo) al final de la línea
+
+                val yFlecha = bottom + espaciadoVertical
+                val pathFlecha = Path()
+                pathFlecha.moveTo(xCentro, yFlecha)
+                pathFlecha.lineTo(xCentro - 15f, yFlecha - 20f)
+                pathFlecha.lineTo(xCentro + 15f, yFlecha - 20f)
+                pathFlecha.close()
+                canvas.drawPath(pathFlecha, paintFondo.apply { color = Color.DKGRAY })
             }
 
-            // Mover la coordenada Y para el siguiente nodo
             yActual += altoNodo + espaciadoVertical
         }
     }
@@ -73,21 +98,19 @@ class DiagramaView @JvmOverloads constructor(
             paintFondo.color = Color.parseColor(nodo.estilo.colorFondo)
             paintTexto.color = Color.parseColor(nodo.estilo.colorTexto)
         } catch (e: Exception) {
-            paintFondo.color = Color.WHITE
-            paintTexto.color = Color.BLACK
+            paintFondo.color = Color.WHITE; paintTexto.color = Color.BLACK
         }
 
         val scaledDensity = resources.displayMetrics.scaledDensity
         paintTexto.textSize = (nodo.estilo.tamanoFuente.toFloat() * scaledDensity)
 
-        val typeface = when (nodo.estilo.fuente.uppercase()) {
+        paintTexto.typeface = when (nodo.estilo.fuente.uppercase()) {
             "ARIAL" -> Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
             "TIMES_NEW_ROMAN" -> Typeface.create(Typeface.SERIF, Typeface.NORMAL)
-            "COMIC_SANS" -> Typeface.create("casual", Typeface.NORMAL) // 'casual' es lo más cercano a Comic Sans en Android nativo
-            "VERDANA" -> Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD) // Aproximación
+            "COMIC_SANS" -> Typeface.create("casual", Typeface.NORMAL)
+            "VERDANA" -> Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
             else -> Typeface.DEFAULT
         }
-        paintTexto.typeface = typeface
     }
 
     private fun dibujarFigura(canvas: Canvas, left: Float, top: Float, right: Float, bottom: Float, tipoFigura: String) {
@@ -100,27 +123,25 @@ class DiagramaView @JvmOverloads constructor(
                 canvas.drawRect(rect, paintBorde)
             }
             "RECTANGULO_REDONDEADO" -> {
-                canvas.drawRoundRect(rect, 30f, 30f, paintFondo)
-                canvas.drawRoundRect(rect, 30f, 30f, paintBorde)
+                canvas.drawRoundRect(rect, 40f, 40f, paintFondo)
+                canvas.drawRoundRect(rect, 40f, 40f, paintBorde)
             }
             "ELIPSE", "CIRCULO" -> {
-                // Si es círculo estricto, podrías forzar que ancho == alto. Por ahora usamos óvalo.
                 canvas.drawOval(rect, paintFondo)
                 canvas.drawOval(rect, paintBorde)
             }
+
             "ROMBO" -> {
-                val midX = left + (right - left) / 2
-                val midY = top + (bottom - top) / 2
-                path.moveTo(midX, top)
-                path.lineTo(right, midY)
-                path.lineTo(midX, bottom)
-                path.lineTo(left, midY)
+                path.moveTo(left + (right - left) / 2, top)
+                path.lineTo(right, top + (bottom - top) / 2)
+                path.lineTo(left + (right - left) / 2, bottom)
+                path.lineTo(left, top + (bottom - top) / 2)
                 path.close()
                 canvas.drawPath(path, paintFondo)
                 canvas.drawPath(path, paintBorde)
             }
             "PARALELOGRAMO" -> {
-                val offset = 60f // Inclinación
+                val offset = 60f
                 path.moveTo(left + offset, top)
                 path.lineTo(right, top)
                 path.lineTo(right - offset, bottom)
@@ -129,7 +150,7 @@ class DiagramaView @JvmOverloads constructor(
                 canvas.drawPath(path, paintFondo)
                 canvas.drawPath(path, paintBorde)
             }
-            else -> { // Por defecto rectángulo
+            else -> {
                 canvas.drawRect(rect, paintFondo)
                 canvas.drawRect(rect, paintBorde)
             }
