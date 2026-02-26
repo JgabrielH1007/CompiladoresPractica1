@@ -32,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginBottom="16dp"
-        android:text="Ver Estadísticas"
+        android:text="Ver Reportes"
         android:enabled="false" />
     <ScrollView
         android:layout_width="match_parent"

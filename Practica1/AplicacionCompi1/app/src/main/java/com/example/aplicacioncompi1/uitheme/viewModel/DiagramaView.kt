@@ -28,7 +28,6 @@ class DiagramaView @JvmOverloads constructor(
 
     private fun obtenerAltoNodo(nodo: NodoDiagrama): Float {
         val lineas = nodo.texto.split("\n").size
-        // 120f de base + 40f por cada línea de texto
         return kotlin.math.max(120f, (lineas * 50f) + 60f)
     }
 

@@ -1,6 +1,6 @@
 package com.example.aplicacioncompi1.uitheme.logic
 
-enum class TipoNodo { INICIO_FIN, PROCESO, ENTRADA_SALIDA, CONDICION, CICLO }
+enum class TipoNodo { INICIO_FIN, PROCESO, CONDICION, CICLO }
 
 data class EstiloGrafico(
     var figura: String,
@@ -25,19 +25,19 @@ class GeneradorDiagrama(val input: String) {
 
     fun generarDiagrama(): List<NodoDiagrama> {
         val bloques = input.split(Regex("%%%%|SEPARADOR"))
-        val codigoCrudo = bloques.getOrNull(0)?.trim() ?: ""
-        val configCruda = bloques.getOrNull(1)?.trim() ?: ""
+        val condigoInicial = bloques.getOrNull(0)?.trim() ?: ""
+        val configuracionInicial = bloques.getOrNull(1)?.trim() ?: ""
 
-        procesarConfiguraciones(configCruda)
+        procesarConfiguraciones(configuracionInicial)
 
-        val nodos = procesarCodigo(codigoCrudo)
+        val nodos = procesarCodigo(condigoInicial)
 
         return nodos
     }
 
-    private fun procesarConfiguraciones(configCruda: String) {
-        if (configCruda.isEmpty()) return
-        val lineas = configCruda.lines().map { it.trim() }.filter { it.isNotEmpty() && it.startsWith("%") }
+    private fun procesarConfiguraciones(configuracionInicial: String) {
+        if (configuracionInicial.isEmpty()) return
+        val lineas = configuracionInicial.lines().map { it.trim() }.filter { it.isNotEmpty() && it.startsWith("%") }
 
         for (linea in lineas) {
             val sinPorcentaje = linea.removePrefix("%")
@@ -58,8 +58,8 @@ class GeneradorDiagrama(val input: String) {
         }
     }
 
-    private fun procesarCodigo(codigoCrudo: String): MutableList<NodoDiagrama> {
-        val lineas = codigoCrudo.lines().map { it.trim() }.filter { it.isNotEmpty() }
+    private fun procesarCodigo(codigoInicial: String): MutableList<NodoDiagrama> {
+        val lineas = codigoInicial.lines().map { it.trim() }.filter { it.isNotEmpty() }
         val nodosGenerados = mutableListOf<NodoDiagrama>()
         var i = 0
 
@@ -134,26 +134,26 @@ class GeneradorDiagrama(val input: String) {
     private fun aplicarConfiguracionesAlEstilo(indice: Int, tipoNodo: TipoNodo, estilo: EstiloGrafico) {
 
         if (tipoNodo == TipoNodo.CONDICION) {
-            configuraciones["COLOR_SI|$indice"]?.let { estilo.colorFondo = parsearColor(it) }
-            configuraciones["COLOR_TEXTO_SI|$indice"]?.let { estilo.colorTexto = parsearColor(it) }
+            configuraciones["COLOR_SI|$indice"]?.let { estilo.colorFondo = obtenerColor(it) }
+            configuraciones["COLOR_TEXTO_SI|$indice"]?.let { estilo.colorTexto = obtenerColor(it) }
             configuraciones["FIGURA_SI|$indice"]?.let { estilo.figura = it }
             configuraciones["LETRA_SI|$indice"]?.let { estilo.fuente = it }
         }
         else if (tipoNodo == TipoNodo.CICLO) {
-            configuraciones["COLOR_MIENTRAS|$indice"]?.let { estilo.colorFondo = parsearColor(it) }
-            configuraciones["COLOR_TEXTO_MIENTRAS|$indice"]?.let { estilo.colorTexto = parsearColor(it) }
+            configuraciones["COLOR_MIENTRAS|$indice"]?.let { estilo.colorFondo = obtenerColor(it) }
+            configuraciones["COLOR_TEXTO_MIENTRAS|$indice"]?.let { estilo.colorTexto = obtenerColor(it) }
             configuraciones["FIGURA_MIENTRAS|$indice"]?.let { estilo.figura = it }
             configuraciones["LETRA_MIENTRAS|$indice"]?.let { estilo.fuente = it }
         }
         else {
-            configuraciones["COLOR_BLOQUE|$indice"]?.let { estilo.colorFondo = parsearColor(it) }
-            configuraciones["COLOR_TEXTO_BLOQUE|$indice"]?.let { estilo.colorTexto = parsearColor(it) }
+            configuraciones["COLOR_BLOQUE|$indice"]?.let { estilo.colorFondo = obtenerColor(it) }
+            configuraciones["COLOR_TEXTO_BLOQUE|$indice"]?.let { estilo.colorTexto = obtenerColor(it) }
             configuraciones["FIGURA_BLOQUE|$indice"]?.let { estilo.figura = it }
             configuraciones["LETRA_BLOQUE|$indice"]?.let { estilo.fuente = it }
         }
     }
 
-    private fun parsearColor(valor: String): String {
+    private fun obtenerColor(valor: String): String {
         if (valor.startsWith("H")) {
             return "#" + valor.substring(1)
         }
@@ -162,6 +162,7 @@ class GeneradorDiagrama(val input: String) {
             val partesRgb = valor.split(",")
             if (partesRgb.size == 3) {
                 try {
+                    //obtnengo los valores de las expresiones matematicas manualmente
                     val r = evaluarExpresion(partesRgb[0]).toInt().coerceIn(0, 255)
                     val g = evaluarExpresion(partesRgb[1]).toInt().coerceIn(0, 255)
                     val b = evaluarExpresion(partesRgb[2]).toInt().coerceIn(0, 255)
@@ -180,61 +181,61 @@ class GeneradorDiagrama(val input: String) {
             var pos = -1
             var ch = 0
 
-            fun nextChar() {
+            fun siguienteCaracter() {
                 ch = if (++pos < str.length) str[pos].code else -1
             }
 
-            fun eat(charToEat: Int): Boolean {
-                while (ch == ' '.code) nextChar()
+            fun ignorar(charToEat: Int): Boolean {
+                while (ch == ' '.code) siguienteCaracter()
                 if (ch == charToEat) {
-                    nextChar()
+                    siguienteCaracter()
                     return true
                 }
                 return false
             }
 
-            fun parse(): Double {
-                nextChar()
-                val x = parseExpression()
+            fun obtenerValor(): Double {
+                siguienteCaracter()
+                val x = obtenerExpresion()
                 if (pos < str.length) throw RuntimeException("Carácter inesperado: " + ch.toChar())
                 return x
             }
 
-            fun parseExpression(): Double {
-                var x = parseTerm()
+            fun obtenerExpresion(): Double {
+                var x = obtenerTermino()
                 while (true) {
-                    if (eat('+'.code)) x += parseTerm()
-                    else if (eat('-'.code)) x -= parseTerm()
+                    if (ignorar('+'.code)) x += obtenerTermino()
+                    else if (ignorar('-'.code)) x -= obtenerTermino()
                     else return x
                 }
             }
 
-            fun parseTerm(): Double {
-                var x = parseFactor()
+            fun obtenerTermino(): Double {
+                var x = obtenerFactor()
                 while (true) {
-                    if (eat('*'.code)) x *= parseFactor()
-                    else if (eat('/'.code)) x /= parseFactor()
+                    if (ignorar('*'.code)) x *= obtenerFactor()
+                    else if (ignorar('/'.code)) x /= obtenerFactor()
                     else return x
                 }
             }
 
-            fun parseFactor(): Double {
-                if (eat('+'.code)) return parseFactor()
-                if (eat('-'.code)) return -parseFactor()
+            fun obtenerFactor(): Double {
+                if (ignorar('+'.code)) return obtenerFactor()
+                if (ignorar('-'.code)) return -obtenerFactor()
 
                 var x: Double
                 val startPos = pos
-                if (eat('('.code)) {
-                    x = parseExpression()
-                    eat(')'.code)
+                if (ignorar('('.code)) {
+                    x = obtenerExpresion()
+                    ignorar(')'.code)
                 } else if (ch in '0'.code..'9'.code || ch == '.'.code) {
-                    while (ch in '0'.code..'9'.code || ch == '.'.code) nextChar()
+                    while (ch in '0'.code..'9'.code || ch == '.'.code) siguienteCaracter()
                     x = str.substring(startPos, pos).toDouble()
                 } else {
                     throw RuntimeException("Carácter inesperado: " + ch.toChar())
                 }
                 return x
             }
-        }.parse()
+        }.obtenerValor()
     }
 }

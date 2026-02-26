@@ -12,11 +12,52 @@ class GeneradorReportes(private val parser: Parser) {
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <style>
-                    body { font-family: sans-serif; padding: 10px; }
-                    h3 { color: #0055a4; font-weight: normal; margin-top: 20px; }
-                    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-                    th, td { border: 1px solid black; padding: 6px; text-align: left; font-size: 12px; word-wrap: break-word; }
-                    th { font-weight: bold; background-color: #f8f8f8; }
+                    body { 
+                        font-family: 'Roboto', sans-serif; 
+                        padding: 12px; 
+                        margin: 0;
+                        color: #333333;
+                        background-color: #ffffff;
+                    }
+                    h3 { 
+                        color: #1976D2; 
+                        font-weight: bold; 
+                        font-size: 16px;
+                        margin-top: 24px; 
+                        margin-bottom: 12px;
+                        border-bottom: 2px solid #1976D2;
+                        padding-bottom: 4px;
+                        text-transform: uppercase;
+                    }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        table-layout: fixed; 
+                        border-radius: 6px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+                        margin-bottom: 20px;
+                    }
+                    th, td { 
+                        padding: 10px 8px; 
+                        text-align: left; 
+                        font-size: 12px; 
+                        word-wrap: break-word; 
+                    }
+                    th { 
+                        background-color: #1976D2; 
+                        color: #ffffff; 
+                        font-weight: bold; 
+                    }
+                    td {
+                        border-bottom: 1px solid #E0E0E0; 
+                    }
+                    tr:last-child td {
+                        border-bottom: none;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #F8F9FA; 
+                    }
                 </style>
             </head>
             <body>

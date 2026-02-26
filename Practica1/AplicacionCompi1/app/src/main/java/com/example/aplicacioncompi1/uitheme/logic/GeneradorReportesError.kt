@@ -8,7 +8,7 @@ class GeneradorReportesError(private val lexer: Lexer, private val parser: Parse
 
     fun generarReporteHtml(): String {
         val html = StringBuilder()
-
+        
         html.append("""
             <!DOCTYPE html>
             <html>
@@ -16,43 +16,61 @@ class GeneradorReportesError(private val lexer: Lexer, private val parser: Parse
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <style>
                     body { 
-                        font-family: sans-serif; 
-                        padding: 0; 
-                        margin: 0; 
+                        font-family: 'Roboto', sans-serif; 
+                        padding: 12px; 
+                        margin: 0;
+                        color: #333333;
+                        background-color: #ffffff;
                     }
                     h2 { 
-                        color: #0055a4; 
-                        font-weight: normal; 
+                        color: #1976D2;
+                        font-weight: bold; 
                         font-size: 18px; 
-                        margin-bottom: 10px;
+                        margin-top: 10px;
+                        margin-bottom: 12px;
+                        border-bottom: 2px solid #1976D2;
+                        padding-bottom: 4px;
+                        text-transform: uppercase;
                     }
                     table { 
                         width: 100%; 
                         border-collapse: collapse; 
-                        table-layout: fixed; /* Obliga a la tabla a no salirse de la pantalla */
+                        table-layout: fixed;
+                        border-radius: 6px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
                     }
                     th, td { 
-                        border: 1px solid black; 
-                        padding: 6px; 
+                        padding: 10px 6px; 
                         text-align: left; 
-                        font-size: 11px; /* Letra más pequeña para que quepa bien todo */
-                        word-wrap: break-word; /* Fuerza el salto de línea si el texto es muy largo */
+                        font-size: 11px; 
+                        word-wrap: break-word; 
                         overflow-wrap: break-word;
                     }
                     th { 
+                        background-color: #1976D2; 
+                        color: #ffffff; 
                         font-weight: bold; 
-                        background-color: #f0f0f0; 
                     }
-                    /* Le damos anchos específicos a las columnas para aprovechar el espacio */
-                    th:nth-child(1) { width: 15%; } /* Lexema */
-                    th:nth-child(2) { width: 12%; } /* Línea */
-                    th:nth-child(3) { width: 14%; } /* Columna */
-                    th:nth-child(4) { width: 19%; } /* Tipo */
-                    th:nth-child(5) { width: 40%; } /* Descripción */
+                    td {
+                        border-bottom: 1px solid #E0E0E0;
+                    }
+                    tr:last-child td {
+                        border-bottom: none; 
+                    }
+                    tr:nth-child(even) {
+                        background-color: #F8F9FA; 
+                    }
+                    
+                    th:nth-child(1) { width: 16%; }
+                    th:nth-child(2) { width: 12%; } 
+                    th:nth-child(3) { width: 12%; } 
+                    th:nth-child(4) { width: 18%; } 
+                    th:nth-child(5) { width: 42%; } 
                 </style>
             </head>
             <body>
-                <h2>Reporte de errores</h2>
+                <h2>Reporte de Errores</h2>
                 <table>
                     <tr>
                         <th>Lexema</th>

@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
                         btnEstadisticas.isEnabled = true
                         btnEstadisticas.setOnClickListener {
-                            mostrarReportes(analizador.reporteEstadistico)
+                            mostrarReportes(analizador.reportes)
                         }
                     }
                 } else {

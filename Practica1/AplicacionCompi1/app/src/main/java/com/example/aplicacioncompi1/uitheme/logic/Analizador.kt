@@ -14,7 +14,7 @@ class Analizador(private val input: String) {
     var reporteErrores: String = ""
         private set
 
-    var reporteEstadistico: String = ""
+    var reportes: String = ""
         private set
 
     fun analizar() {
@@ -34,7 +34,7 @@ class Analizador(private val input: String) {
                 generadorDiagrama = GeneradorDiagrama(input)
 
                 val generadorReportes1 = GeneradorReportes(parser)
-                reporteEstadistico = generadorReportes1.generarReporteHtml()
+                reportes = generadorReportes1.generarReporteHtml()
             }
 
         } catch (e: Exception) {

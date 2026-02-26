@@ -1,4 +1,4 @@
-package com.example.aplicacioncompi1.uitheme.logic; // Asegúrate de que el paquete sea el correcto
+package com.example.aplicacioncompi1.uitheme.logic;
 
 public class ErrorSintactico {
     private String lexema;
